@@ -58,7 +58,7 @@ main::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
 .badge.p{background:rgba(124,92,252,.15);color:var(--ac)}
 
 /* ── Stat row ───────────────────────────────────────────────── */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .stat{text-align:center;padding:18px 14px;display:flex;flex-direction:column;align-items:center}
 .stat .v{font-size:38px;font-weight:700;font-family:var(--mono);line-height:1}
 .stat .l{font-size:12px;color:var(--t2);margin-top:4px}
@@ -143,7 +143,6 @@ footer{display:flex;align-items:center;justify-content:space-between;padding:8px
     <div class="c stat"><div class="ic">🖥️</div><div class="v" id="svProc">0</div><div class="l">Claude 进程</div><div class="s" id="ssProc">--</div></div>
     <div class="c stat"><div class="ic">📋</div><div class="v" id="svSess">0</div><div class="l">会话</div><div class="s" id="ssSess">--</div></div>
     <div class="c stat"><div class="ic">🔢</div><div class="v" id="svTok">0</div><div class="l">Token 用量</div><div class="s" id="ssTok">--</div></div>
-    <div class="c stat"><div class="ic">💵</div><div class="v" id="svCost">$0</div><div class="l">费用估算</div><div class="s" id="ssCost">官方定价</div></div>
   </div>
 
   <!-- Expandable: Processes -->
@@ -180,15 +179,6 @@ footer{display:flex;align-items:center;justify-content:space-between;padding:8px
       </div>
       <div class="cb"><div id="actBody" style="color:var(--t3);text-align:center;padding:20px">等待活动...</div></div>
     </div>
-  </div>
-
-  <!-- Expandable: Cost breakdown -->
-  <div class="c expandable open" id="eCost">
-    <div class="ch" onclick="toggle('eCost')">
-      <span class="ct">💰 费用明细 — 按模型/按 token 类型 <span class="badge g" id="bCost">$0.00</span></span>
-      <span style="font-size:11px;color:var(--t3)">点击折叠 <span class="chev">▼</span></span>
-    </div>
-    <div class="cb"><div id="costBody" style="color:var(--t3);text-align:center;padding:20px">计算中...</div></div>
   </div>
 
   <!-- Chart -->
@@ -237,7 +227,6 @@ setInterval(async()=>{
 // ═══════════════════════════════════════════════════════════════
 function toggle(id){
   document.getElementById(id).classList.toggle('open');
-  if(id==='eCost') setTimeout(drawChart,400);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -269,10 +258,6 @@ function update(d){
   const totalT=(tok.totalInput||0)+(tok.totalOutput||0);
   document.getElementById('svTok').textContent=totalT>1e9?(totalT/1e9).toFixed(1)+'B':totalT>1e6?(totalT/1e6).toFixed(1)+'M':totalT>1e3?(totalT/1e3).toFixed(0)+'K':totalT;
   document.getElementById('ssTok').textContent=`in ${fmtTok(tok.totalInput||0)} / out ${fmtTok(tok.totalOutput||0)}`;
-
-  const cost=tok.estimatedCost||0;
-  document.getElementById('svCost').textContent='$'+cost.toFixed(2);
-  document.getElementById('ssCost').textContent='官方Claude定价';
 
   // ── Process table ──────────────────────────────────────────
   document.getElementById('bProc').textContent=procs.length;
@@ -347,37 +332,6 @@ function update(d){
   }
   document.getElementById('actBody').innerHTML=ah;
 
-  // ── Cost breakdown ──────────────────────────────────────────
-  const pm=tok.perModel||{};
-  document.getElementById('bCost').textContent='$'+cost.toFixed(2);
-  let ch='';
-  const entries=Object.entries(pm).sort((a,b)=>b[1].cost-a[1].cost);
-  if(entries.length===0) ch='<div style="color:var(--t3);text-align:center;padding:20px">暂无 token 数据 (本会话尚未产生 API 用量)</div>';
-  else {
-    ch='<table class="cost-tbl"><thead><tr><th>模型</th><th class="n">调用次数</th><th class="n">输入</th><th class="n">输出</th><th class="n">缓存写</th><th class="n">缓存读</th><th class="n">💰 费用</th><th style="font-size:9px">定价(in/out)</th></tr></thead><tbody>';
-    entries.forEach(([model, t])=>{
-      const isClaude=model.startsWith('claude-');
-      ch+=`<tr>
-        <td>${isClaude?'🤖':'🔧'} ${model}</td>
-        <td class="n">${t.calls.toLocaleString()}</td>
-        <td class="n">${fmtTok(t.input)}</td>
-        <td class="n">${fmtTok(t.output)}</td>
-        <td class="n">${fmtTok(t.cacheW)}</td>
-        <td class="n">${fmtTok(t.cacheR)}</td>
-        <td class="n" style="color:${t.cost>0.01?'var(--ye)':'var(--gr)'}">$${t.cost.toFixed(4)}</td>
-        <td style="font-size:9px;color:var(--t3)">${t.pricing?('$'+t.pricing.input+'/$'+t.pricing.output):'--'}</td>
-      </tr>`;
-    });
-    ch+='<tr class="tot"><td>合计</td><td class="n">'+entries.reduce((s,[,t])=>s+t.calls,0).toLocaleString()+'</td>';
-    ch+='<td class="n">'+fmtTok(tok.totalInput||0)+'</td>';
-    ch+='<td class="n">'+fmtTok(tok.totalOutput||0)+'</td>';
-    ch+='<td class="n">'+fmtTok(tok.totalCacheW||0)+'</td>';
-    ch+='<td class="n">'+fmtTok(tok.totalCacheR||0)+'</td>';
-    ch+='<td class="n" style="color:var(--gr)">$'+cost.toFixed(4)+'</td><td></td></tr>';
-    ch+='</tbody></table>';
-  }
-  document.getElementById('costBody').innerHTML=ch;
-
   // ── System ──────────────────────────────────────────────────
   const sys=d.system||{};
   document.getElementById('sysBody').innerHTML=`
@@ -387,10 +341,12 @@ function update(d){
   `;
 
   // ── File stats ──────────────────────────────────────────────
+  const pm=tok.perModel||{};
+  const modelCount=Object.keys(pm).length;
   document.getElementById('fileBody').innerHTML=`
     💬 对话记录: ${tok.totalConversations||0} 条<br>
     🔢 Token 总量: ${fmtTok(totalT)} (输入 ${fmtTok(tok.totalInput||0)} + 输出 ${fmtTok(tok.totalOutput||0)})<br>
-    📊 模型数: ${entries.length} &nbsp;|&nbsp; 会话文件: ${sess.length}
+    📊 模型种类: ${modelCount} &nbsp;|&nbsp; 会话文件: ${sess.length}
   `;
 
   document.getElementById('ft').textContent='最后更新: '+new Date(d.timestamp).toLocaleTimeString('zh-CN');

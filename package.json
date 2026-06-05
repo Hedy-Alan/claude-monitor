@@ -1,14 +1,37 @@
 {
   "name": "claude-code-monitor",
-  "version": "1.0.0",
-  "description": "Real-time desktop monitor for Claude Code - process status, token usage, health checks",
+  "version": "2.0.0",
+  "description": "Real-time desktop dashboard for monitoring Claude Code processes, sessions, and token usage in dark cyberpunk style",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js --open"
   },
-  "keywords": ["claude", "monitor", "dashboard", "token-tracking"],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "monitor",
+    "dashboard",
+    "token-tracking",
+    "anthropic",
+    "vscode-extension",
+    "desktop-monitor",
+    "real-time",
+    "devtools"
+  ],
+  "author": "Hedy-Alan",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hedy-Alan/claude-monitor.git"
+  },
+  "homepage": "https://github.com/Hedy-Alan/claude-monitor#readme",
+  "bugs": {
+    "url": "https://github.com/Hedy-Alan/claude-monitor/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "ws": "^8.18.0"
   }

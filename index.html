@@ -1,420 +1,142 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🤖 Claude Code Monitor</title>
+<!doctype html><html lang=zh><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>🤖 Claude Monitor</title>
 <style>
-/* ── Reset & Base ───────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0a0a0f;--bg2:#12121a;--card:#161622;--cardH:#1c1c2e;--bdr:#252540;
-  --t1:#e8e8f0;--t2:#9090b0;--t3:#606080;
-  --ac:#7c5cfc;--acg:rgba(124,92,252,.3);
-  --gr:#00e676;--grg:rgba(0,230,118,.3);
-  --ye:#ffc107;--yeg:rgba(255,193,7,.3);
-  --rd:#ff5252;--rdg:rgba(255,82,82,.3);
-  --bl:#448aff;--blg:rgba(68,138,255,.3);
-  --cy:#00e5ff;
+  --bg:#0b0b12;--bg2:#111122;--card:#14142a;--bdr:#1e1e40;
+  --t1:#e0e0f0;--t2:#8888b0;--t3:#555578;
+  --gr:#00c853;--rd:#ff1744;--or:#ff9100;--bl:#448aff;--ac:#7c5cfc;--cy:#00e5ff;
   --mono:'Cascadia Code','Fira Code','JetBrains Mono',Consolas,monospace;
-  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  --r:12px;--rs:8px;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif;
+  --r:8px;
 }
-html,body{height:100%;overflow:hidden}
-body{font-family:var(--sans);background:var(--bg);color:var(--t1);display:flex;flex-direction:column;user-select:none}
+html,body{height:100%;overflow:hidden;font-family:var(--sans);background:var(--bg);color:var(--t1)}
+body{display:flex;flex-direction:column}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
 
-/* ── Header ─────────────────────────────────────────────────── */
-header{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:var(--bg2);border-bottom:1px solid var(--bdr);flex-shrink:0}
-.hl{display:flex;align-items:center;gap:14px}
-.logo{font-size:21px;font-weight:700;background:linear-gradient(135deg,var(--ac),var(--cy));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.dot{width:10px;height:10px;border-radius:50%;display:inline-block;animation:pulse 2s infinite}
-.dot.healthy{background:var(--gr);box-shadow:0 0 10px var(--grg)}
-.dot.warning{background:var(--ye);box-shadow:0 0 10px var(--yeg)}
-.dot.idle{background:var(--bl);box-shadow:0 0 10px var(--blg)}
-.dot.error{background:var(--rd);box-shadow:0 0 10px var(--rdg)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.st{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
-.hr{display:flex;align-items:center;gap:16px;font-size:12px;color:var(--t2)}
-.clock{font-family:var(--mono);color:var(--t1);font-size:14px}
-.ws{padding:4px 10px;border-radius:20px;background:var(--card);border:1px solid var(--bdr);font-size:11px}
-.ws.ok{border-color:var(--gr);color:var(--gr)}
-.ws.err{border-color:var(--rd);color:var(--rd)}
+/* Top bar */
+#bar{display:flex;align-items:center;justify-content:space-between;height:36px;padding:0 14px;background:var(--bg2);border-bottom:1px solid var(--bdr);flex-shrink:0}
+#bar .left{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--ac)}
+.dot{width:7px;height:7px;border-radius:50%}.dot.ok{background:var(--gr)}.dot.warn{background:var(--or)}.dot.idle{background:var(--t3)}
+#bar .right{font-size:10px;color:var(--t3)}
 
-/* ── Main ───────────────────────────────────────────────────── */
-main{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px;display:flex;flex-direction:column;gap:14px}
-main::-webkit-scrollbar{width:5px}
-main::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+/* Main */
+main{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
 
-/* ── Cards ──────────────────────────────────────────────────── */
-.c{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:14px 16px;transition:border-color .2s}
-.c:hover{border-color:var(--ac)}
-.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;cursor:pointer}
-.ct{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--t2)}
-.badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500}
-.badge.g{background:rgba(0,230,118,.15);color:var(--gr)}
-.badge.y{background:rgba(255,193,7,.15);color:var(--ye)}
-.badge.r{background:rgba(255,82,82,.15);color:var(--rd)}
-.badge.b{background:rgba(68,138,255,.15);color:var(--bl)}
-.badge.p{background:rgba(124,92,252,.15);color:var(--ac)}
+/* Stat cards row */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.st{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;text-align:center}
+.st .sv{font-family:var(--mono);font-size:30px;font-weight:700}
+.st .sl{font-size:10px;color:var(--t2);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.st .ss{font-size:9px;color:var(--t3);margin-top:2px}
 
-/* ── Stat row ───────────────────────────────────────────────── */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.stat{text-align:center;padding:18px 14px;display:flex;flex-direction:column;align-items:center}
-.stat .v{font-size:38px;font-weight:700;font-family:var(--mono);line-height:1}
-.stat .l{font-size:12px;color:var(--t2);margin-top:4px}
-.stat .s{font-size:10px;color:var(--t3);margin-top:2px}
-.stat .ic{font-size:24px;margin-bottom:4px}
+/* Section */
+.sec{margin-bottom:2px}.sec h3{font-size:10px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:1px;padding:2px 0;margin-bottom:6px}
 
-/* ── Two-col row ────────────────────────────────────────────── */
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+/* Session card */
+.ses{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 12px;margin-bottom:6px;transition:border-color .2s}.ses:hover{border-color:var(--ac)}
+.ses .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ses .sh .sid{font-family:var(--mono);font-size:11px;color:var(--ac);font-weight:600}
+.ses .sh .smeta{font-size:9px;color:var(--t3)}
+.ses .sh .live{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ses .sh .live.alive{background:var(--gr);box-shadow:0 0 6px var(--gr)}
+.ses .sh .live.dead{background:var(--t3)}
+.ses .tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:6px}
+.ses .tgrid .tg{text-align:center}
+.ses .tgrid .tg .tv{font-family:var(--mono);font-size:16px;font-weight:700}
+.ses .tgrid .tg .tl{font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px}
+.ses .models{font-size:9px;color:var(--t2);border-top:1px solid var(--bdr);padding-top:6px}
+.ses .models span{color:var(--t1);margin:0 2px}
 
-/* ── Expandable ─────────────────────────────────────────────── */
-.chev{display:inline-block;transition:transform .25s;font-size:10px;margin-left:6px;color:var(--t3)}
-.expandable .ch .chev{transform:rotate(0deg)}
-.expandable.open .ch .chev{transform:rotate(180deg)}
-.expandable .cb{max-height:0;overflow:hidden;transition:max-height .35s ease}
-.expandable.open .cb{max-height:800px;overflow-y:auto}
-.expandable.open .cb.scroll{max-height:600px}
-.cb::-webkit-scrollbar{width:4px}
-.cb::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
+/* Footer */
+#ft{display:flex;align-items:center;justify-content:space-between;height:22px;padding:0 14px;font-size:9px;color:var(--t3);background:var(--bg2);border-top:1px solid var(--bdr);flex-shrink:0}
+</style></head><body>
 
-/* ── Table styles inside expandable ─────────────────────────── */
-.tbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px}
-.tbl th{text-align:left;color:var(--t3);font-weight:500;padding:4px 8px;border-bottom:1px solid var(--bdr);position:sticky;top:0;background:var(--card)}
-.tbl td{padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
-.tbl tr:hover td{background:rgba(255,255,255,.02)}
-.tbl .n{text-align:right}
-.tbl .pid{color:var(--ac);font-weight:600}
-.tbl .cpu{color:var(--ye)}
-.tbl .mem{color:var(--bl)}
-.tbl .th{color:var(--t3)}
-.tbl .act{color:var(--gr)}
-.tbl .dead{color:var(--t3);opacity:.5}
-.tbl .sessId{color:var(--ac)}
-.tbl .sessVer{font-size:10px;color:var(--t3)}
-
-/* ── Health list ────────────────────────────────────────────── */
-.hitem{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px}
-.hitem .icon{font-size:13px;flex-shrink:0}
-.hitem .msg{color:var(--t2);flex:1}
-
-/* ── Chart ──────────────────────────────────────────────────── */
-.chart-wrap{position:relative;width:100%;height:200px;background:rgba(0,0,0,.2);border-radius:var(--rs);overflow:hidden}
-canvas{display:block}
-
-/* ── Footer ─────────────────────────────────────────────────── */
-footer{display:flex;align-items:center;justify-content:space-between;padding:8px 24px;background:var(--bg2);border-top:1px solid var(--bdr);font-size:10px;color:var(--t3);flex-shrink:0}
-
-/* ── Cost breakdown table ───────────────────────────────────── */
-.cost-tbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px;margin-top:8px}
-.cost-tbl th{text-align:right;color:var(--t3);font-weight:500;padding:3px 8px;border-bottom:1px solid var(--bdr)}
-.cost-tbl td{text-align:right;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,.03)}
-.cost-tbl td:first-child,.cost-tbl th:first-child{text-align:left}
-.cost-tbl tr.tot td{border-top:1px solid var(--bdr);font-weight:700;color:var(--t1)}
-.cost-tbl tr:hover td{background:rgba(255,255,255,.02)}
-
-/* ── Animations ─────────────────────────────────────────────── */
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.c{animation:fadeIn .3s ease-out}
-
-/* ── Responsive ─────────────────────────────────────────────── */
-@media(max-width:1100px){.stats{grid-template-columns:repeat(2,1fr)}.row2{grid-template-columns:1fr}}
-@media(max-width:600px){.stats{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-
-<header>
-  <div class="hl">
-    <span class="logo">🤖 Claude Monitor</span>
-    <span class="dot" id="dot"></span>
-    <span class="st" id="st">--</span>
-  </div>
-  <div class="hr">
-    <span>⏱ 2s</span>
-    <span class="clock" id="clock">--:--:--</span>
-    <span class="ws" id="ws">🔗 --</span>
-  </div>
-</header>
-
-<main>
-  <!-- Stat cards -->
-  <div class="stats">
-    <div class="c stat"><div class="ic">🖥️</div><div class="v" id="svProc">0</div><div class="l">Claude 进程</div><div class="s" id="ssProc">--</div></div>
-    <div class="c stat"><div class="ic">📋</div><div class="v" id="svSess">0</div><div class="l">会话</div><div class="s" id="ssSess">--</div></div>
-    <div class="c stat"><div class="ic">🔢</div><div class="v" id="svTok">0</div><div class="l">Token 用量</div><div class="s" id="ssTok">--</div></div>
-  </div>
-
-  <!-- Expandable: Processes -->
-  <div class="c expandable" id="eProc">
-    <div class="ch" onclick="toggle('eProc')">
-      <span class="ct">🖥️ Claude 进程详情 <span class="badge b" id="bProc">0</span></span>
-      <span style="font-size:11px;color:var(--t3)">点击展开 <span class="chev">▼</span></span>
-    </div>
-    <div class="cb scroll"><div id="procBody" style="color:var(--t3);text-align:center;padding:30px">等待数据...</div></div>
-  </div>
-
-  <!-- Expandable: Sessions -->
-  <div class="c expandable" id="eSess">
-    <div class="ch" onclick="toggle('eSess')">
-      <span class="ct">📋 会话列表 <span class="badge p" id="bSess">0</span></span>
-      <span style="font-size:11px;color:var(--t3)">点击展开 <span class="chev">▼</span></span>
-    </div>
-    <div class="cb scroll"><div id="sessBody" style="color:var(--t3);text-align:center;padding:30px">等待数据...</div></div>
-  </div>
-
-  <!-- Two-col: Health + Activity -->
-  <div class="row2">
-    <div class="c expandable" id="eHealth">
-      <div class="ch" onclick="toggle('eHealth')">
-        <span class="ct">🏥 健康检查 <span class="badge" id="bHealth">--</span></span>
-        <span style="font-size:11px;color:var(--t3)">点击展开 <span class="chev">▼</span></span>
-      </div>
-      <div class="cb"><div id="healthBody" style="color:var(--t3);padding:15px">检查中...</div></div>
-    </div>
-    <div class="c expandable" id="eAct">
-      <div class="ch" onclick="toggle('eAct')">
-        <span class="ct">📡 实时活动 <span class="badge b" id="bAct">监听中</span></span>
-        <span style="font-size:11px;color:var(--t3)">点击展开 <span class="chev">▼</span></span>
-      </div>
-      <div class="cb"><div id="actBody" style="color:var(--t3);text-align:center;padding:20px">等待活动...</div></div>
-    </div>
-  </div>
-
-  <!-- Chart -->
-  <div class="c">
-    <div class="ch"><span class="ct">📊 进程活动趋势 (近1小时)</span><span class="badge b">实时</span></div>
-    <div class="chart-wrap"><canvas id="chart"></canvas></div>
-  </div>
-
-  <!-- Two-col: System + Stats -->
-  <div class="row2">
-    <div class="c"><div class="ct" style="margin-bottom:8px">💻 系统信息</div><div id="sysBody" style="font-family:var(--mono);font-size:11px;line-height:1.8;color:var(--t2)">等待...</div></div>
-    <div class="c"><div class="ct" style="margin-bottom:8px">📁 数据统计</div><div id="fileBody" style="font-family:var(--mono);font-size:11px;line-height:1.8;color:var(--t2)">等待...</div></div>
-  </div>
-</main>
-
-<footer><span>Claude Code Desktop Monitor v2.0</span><span id="ft">--</span><span>Node.js + WebSocket</span></footer>
+<div id=bar>
+  <div class=left><span>🤖 Claude Monitor</span><span class="dot ok" id=d></span></div>
+  <div class=right><span id=clk>--</span> · 2s刷新</div>
+</div>
+<main id=mn>加载中...</main>
+<div id=ft><span id=fu>--</span><span id=fs>--</span></div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
-//  WebSocket
-// ═══════════════════════════════════════════════════════════════
-let ws, hist=[];
-function connect(){
+let ws;
+function conn(){
   ws=new WebSocket(`ws://${location.hostname}:9876`);
-  ws.onopen=()=>{document.getElementById('ws').textContent='🟢 已连接';document.getElementById('ws').className='ws ok'};
-  ws.onclose=()=>{document.getElementById('ws').textContent='🔴 断开';document.getElementById('ws').className='ws err';setTimeout(connect,3000)};
-  ws.onerror=()=>{document.getElementById('ws').textContent='⚠️ 错误';document.getElementById('ws').className='ws err'};
+  ws.onopen=()=>document.getElementById('d').className='dot ok';
+  ws.onclose=()=>{document.getElementById('d').className='dot warn';setTimeout(conn,3000)};
   ws.onmessage=e=>{
-    try{
-      const m=JSON.parse(e.data);
-      if(m.type==='full'){update(m.data);hist=m.history||[];drawChart()}
-      else if(m.type==='update')update(m.data);
-    }catch{}
+    const m=JSON.parse(e.data);
+    if(m.type==='full'||m.type==='update')render(m.data);
   };
 }
-connect();
+conn();
 // Fallback polling
-let fallback;
 setInterval(async()=>{
   if(ws&&ws.readyState===WebSocket.OPEN)return;
-  try{const r=await fetch('/api/state');update(await r.json())}catch{}
+  try{const r=await fetch('/api/state');render(await r.json())}catch{}
 },2000);
 
-// ═══════════════════════════════════════════════════════════════
-//  Toggle expand
-// ═══════════════════════════════════════════════════════════════
-function toggle(id){
-  document.getElementById(id).classList.toggle('open');
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  Update
-// ═══════════════════════════════════════════════════════════════
-function update(d){
+function render(d){
   if(!d)return;
+  const dot=document.getElementById('d');
+  if(d.procs.length>0)dot.className='dot ok';else dot.className='dot idle';
 
-  // Status
-  const dot=document.getElementById('dot');
-  const st=document.getElementById('st');
-  dot.className='dot '+(d.health?.status||'idle');
-  st.textContent=d.health?.status==='healthy'?'运行正常':d.health?.status==='warning'?'需要注意':d.health?.status==='idle'?'空闲':'未知';
+  const t=d.tokens||{};
+  const sess=d.sess||[];
+  const alive=sess.filter(s=>s.active).length;
 
-  const procs=d.processes||[];
-  const sess=d.sessions||[];
-  const tok=d.tokens||{};
+  document.getElementById('mn').innerHTML=`
+    <div class=stats>
+      <div class=st><div class=sv>${d.procs.length}</div><div class=sl>Claude 进程</div><div class=ss>总CPU ${d.procs.reduce((s,p)=>s+(p.CPU||0),0).toFixed(0)}s</div></div>
+      <div class=st><div class=sv>${sess.length}</div><div class=sl>会话</div><div class=ss>${alive} 活跃 · ${sess.length-alive} 已结束</div></div>
+      <div class=st><div class=sv>${fmt(t.input)}</div><div class=sl>输入 Token</div></div>
+      <div class=st><div class=sv>${fmt(t.output)}</div><div class=sl>输出 Token</div></div>
+    </div>
 
-  // Stat cards
-  const totalCPU=procs.reduce((s,p)=>s+(p.CPU||0),0).toFixed(0);
-  const totalMem=procs.reduce((s,p)=>s+(p.WorkingSetMB||0),0).toFixed(0);
-  document.getElementById('svProc').textContent=procs.length;
-  document.getElementById('ssProc').textContent=`CPU ${totalCPU}s | ${totalMem} MB`;
+    <div class=sec><h3>📋 会话详情</h3>
+    ${sess.length===0?'<div style="color:var(--t3);font-size:10px;padding:20px;text-align:center">暂无会话</div>':
+      sess.map(s=>{
+        const tk=s.tokens||{};
+        const dur=fmdur(s.age);
+        const input=fmt(tk.input||0),output=fmt(tk.output||0);
+        const cacheHits=tk.cacheR?fmt(tk.cacheR)+' (命中)' : '0';
+        const models=tk.models?Object.entries(tk.models).sort((a,b)=>b[1].input-a[1].input):[];
+        return `<div class=ses>
+          <div class=sh>
+            <div style=display:flex;align-items:center;gap:10px>
+              <span class="live ${s.active?'alive':'dead'}"></span>
+              <span class=sid>${s.sid}</span>
+              <span class=smeta>PID ${s.pid||'?'} · ${s.kind} · ${s.entry} · v${s.ver}</span>
+            </div>
+            <span class=smeta>${dur}</span>
+          </div>
+          <div class=tgrid>
+            <div class=tg><div class=tv>${dur}</div><div class=tl>运行时长</div></div>
+            <div class=tg><div class=tv>${input}</div><div class=tl>输入 Token</div></div>
+            <div class=tg><div class=tv>${output}</div><div class=tl>输出 Token</div></div>
+            <div class=tg><div class=tv style=color:var(--or)>${cacheHits}</div><div class=tl>缓存命中</div></div>
+          </div>
+          ${models.length?`<div class=models>🧠 ${models.map(([m,v])=>\`<span>\${m}</span> \${fmt(v.input)}in/\${fmt(v.output)}out\`).join(' · ')}</div>`:''}
+        </div>`;
+      }).join('')
+    }
+    </div>
 
-  const alive=sess.filter(s=>s.isActive).length;
-  document.getElementById('svSess').textContent=sess.length;
-  document.getElementById('ssSess').textContent=`${alive} 活跃 | ${sess.length-alive} 已结束`;
-
-  const totalT=(tok.totalInput||0)+(tok.totalOutput||0);
-  document.getElementById('svTok').textContent=totalT>1e9?(totalT/1e9).toFixed(1)+'B':totalT>1e6?(totalT/1e6).toFixed(1)+'M':totalT>1e3?(totalT/1e3).toFixed(0)+'K':totalT;
-  document.getElementById('ssTok').textContent=`in ${fmtTok(tok.totalInput||0)} / out ${fmtTok(tok.totalOutput||0)}`;
-
-  // ── Process table ──────────────────────────────────────────
-  document.getElementById('bProc').textContent=procs.length;
-  let ph='';
-  if(procs.length===0) ph='<div style="color:var(--t3);text-align:center;padding:30px">暂无 Claude 进程</div>';
-  else {
-    ph='<table class="tbl"><thead><tr><th>PID</th><th class="n">CPU (s)</th><th class="n">内存 MB</th><th class="n">线程</th><th class="n">运行时长</th><th>启动时间</th></tr></thead><tbody>';
-    procs.forEach(p=>{
-      ph+=`<tr><td class="pid">${p.Id}</td><td class="n cpu">${(p.CPU||0).toFixed(1)}</td><td class="n mem">${p.WorkingSetMB||0}</td><td class="n th">${p.Threads||0}</td><td class="n">${fmtDur(p.UptimeMinutes||0)}</td><td style="font-size:10px;color:var(--t3)">${p.StartTime||'?'}</td></tr>`;
-    });
-    ph+='</tbody></table>';
-  }
-  document.getElementById('procBody').innerHTML=ph;
-
-  // ── Session table ──────────────────────────────────────────
-  document.getElementById('bSess').textContent=sess.length;
-  let sh='';
-  if(sess.length===0) sh='<div style="color:var(--t3);text-align:center;padding:30px">暂无会话</div>';
-  else {
-    sh='<table class="tbl"><thead><tr><th></th><th>会话 ID</th><th>类型</th><th>入口</th><th class="n">运行时长</th><th>版本</th><th>工作目录</th></tr></thead><tbody>';
-    sess.forEach(s=>{
-      sh+=`<tr><td>${s.isActive?'<span class="act">●</span>':'<span class="dead">○</span>'}</td>
-        <td class="sessId">${s.sessionId}</td><td style="font-size:10px">${s.kind||'?'}</td>
-        <td style="font-size:10px">${s.entrypoint||'?'}</td><td class="n">${fmtDur(s.ageMinutes)}</td>
-        <td class="sessVer">${s.version||'?'}</td><td style="font-size:10px;color:var(--t3);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.cwd||'?'}</td></tr>`;
-    });
-    sh+='</tbody></table>';
-  }
-  document.getElementById('sessBody').innerHTML=sh;
-
-  // ── Health ──────────────────────────────────────────────────
-  const h=d.health||{};
-  const hb=document.getElementById('bHealth');
-  hb.textContent=h.status==='healthy'?'✅ 健康':h.status==='warning'?'⚠️ 注意':'💤 空闲';
-  hb.className='badge '+(h.status==='healthy'?'g':h.status==='warning'?'y':'b');
-  const cks=h.checks||{};
-  const is=h.issues||[];
-  let hh='';
-  hh+=`<div class="hitem"><span class="icon" style="color:var(--ac)">📊</span><span class="msg">进程数: <b>${cks.processCount||0}</b></span></div>`;
-  hh+=`<div class="hitem"><span class="icon" style="color:var(--ye)">⚡</span><span class="msg">总 CPU: <b>${(cks.totalCPU||0).toFixed(0)}s</b></span></div>`;
-  hh+=`<div class="hitem"><span class="icon" style="color:var(--bl)">🧠</span><span class="msg">总内存: <b>${cks.totalMemoryMB||0} MB</b></span></div>`;
-  hh+=`<div class="hitem"><span class="icon" style="color:var(--ac)">📋</span><span class="msg">活跃会话: <b>${cks.activeSessions||0}</b> | 残留: ${cks.staleSessions||0}</span></div>`;
-  hh+=`<div class="hitem"><span class="icon" style="color:var(--t3)">📡</span><span class="msg">失败遥测文件: ${cks.failedEventFiles||0}</span></div>`;
-  if(is.length>0){
-    hh+='<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bdr)">';
-    is.forEach(i=>{const c=i.severity==='warning'?'var(--ye)':'var(--t3)';const ic=i.severity==='warning'?'⚠️':'ℹ️';
-      hh+=`<div class="hitem"><span class="icon" style="color:${c}">${ic}</span><span class="msg">${i.msg}</span></div>`;});
-    hh+='</div>';
-  }
-  if(is.length===0) hh+='<div class="hitem"><span class="icon" style="color:var(--gr)">✅</span><span class="msg">所有检查通过</span></div>';
-  document.getElementById('healthBody').innerHTML=hh;
-
-  // ── Activity ────────────────────────────────────────────────
-  const fa=d.fileActivity||{};
-  const evs=fa.recentEvents||[];
-  const secSince=fa.secondsSinceActivity;
-  const aBadge=document.getElementById('bAct');
-  if(secSince!==null&&secSince<10){aBadge.textContent='🟢 活跃';aBadge.className='badge g'}
-  else if(secSince!==null&&secSince<300){aBadge.textContent='🟡 最近活动';aBadge.className='badge y'}
-  else{aBadge.textContent='⏸ 待命中';aBadge.className='badge b'}
-  let ah='';
-  if(evs.length>0){
-    ah='<table class="tbl"><thead><tr><th>时间</th><th>事件</th></tr></thead><tbody>';
-    evs.slice().reverse().forEach(e=>{
-      ah+=`<tr><td style="font-size:10px;color:var(--t3);width:80px">${new Date(e.time).toLocaleTimeString('zh-CN')}</td><td>${e.message}</td></tr>`;
-    });
-    ah+='</tbody></table>';
-  }else if(secSince!==null){
-    ah=`<div style="padding:10px;color:var(--t2);font-size:12px">最后文件活动: ${new Date(fa.lastFileActivity).toLocaleTimeString('zh-CN')} (${fmtDur(secSince/60)}前)</div>`;
-  }else{
-    ah='<div style="color:var(--t3);text-align:center;padding:20px">监听中 — 等待 Claude 文件活动</div>';
-  }
-  document.getElementById('actBody').innerHTML=ah;
-
-  // ── System ──────────────────────────────────────────────────
-  const sys=d.system||{};
-  document.getElementById('sysBody').innerHTML=`
-    🖥️ CPU: ${sys.cpuPercent||'?'}% &nbsp;|&nbsp;
-    🧠 内存: ${sys.memoryTotalGB||'?'}GB / ${sys.memoryFreeGB||'?'}GB 空闲 (${sys.memoryUsedPercent||'?'}% 已用)<br>
-    ⚙️ ${sys.platform||'?'} &nbsp;|&nbsp; 📦 Node ${sys.nodeVersion||'?'} &nbsp;|&nbsp; ⏱ 运行 ${fmtDur((sys.uptime||0)/60)}
+    <div class=sec><h3>🖥️ 进程详情</h3>
+    ${d.procs.length===0?'<div style="color:var(--t3);font-size:10px;padding:10px;text-align:center">暂无进程</div>':
+      `<div style=display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:4px>${
+        d.procs.map(p=>`<div style="background:var(--card);border:1px solid var(--bdr);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:10px"><b style=color:var(--ac)>PID ${p.Id}</b><br>CPU ${(p.CPU||0).toFixed(0)}s<br>内存 ${p.Mem||0} MB<br>${p.UpM||0}分钟 · ${p.Threads||0}线程</div>`).join('')
+      }</div>`
+    }
+    </div>
   `;
 
-  // ── File stats ──────────────────────────────────────────────
-  const pm=tok.perModel||{};
-  const modelCount=Object.keys(pm).length;
-  document.getElementById('fileBody').innerHTML=`
-    💬 对话记录: ${tok.totalConversations||0} 条<br>
-    🔢 Token 总量: ${fmtTok(totalT)} (输入 ${fmtTok(tok.totalInput||0)} + 输出 ${fmtTok(tok.totalOutput||0)})<br>
-    📊 模型种类: ${modelCount} &nbsp;|&nbsp; 会话文件: ${sess.length}
-  `;
-
-  document.getElementById('ft').textContent='最后更新: '+new Date(d.timestamp).toLocaleTimeString('zh-CN');
+  document.getElementById('fu').textContent='更新 '+new Date().toLocaleTimeString('zh-CN');
+  document.getElementById('fs').textContent=`🧠 内存 ${d.sys?.memUsed||'?'}% / ${d.sys?.memTotal||'?'}GB`;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  Chart
-// ═══════════════════════════════════════════════════════════════
-function drawChart(){
-  const c=document.getElementById('chart');
-  if(!c)return;
-  const ctx=c.getContext('2d');
-  const W=c.parentElement.clientWidth, H=c.parentElement.clientHeight;
-  c.width=W*devicePixelRatio;c.height=H*devicePixelRatio;
-  c.style.width=W+'px';c.style.height=H+'px';
-  ctx.scale(devicePixelRatio,devicePixelRatio);
+function fmt(n){if(!n)return'0';if(n>1e9)return(n/1e9).toFixed(1)+'B';if(n>1e6)return(n/1e6).toFixed(1)+'M';if(n>1e3)return(n/1e3).toFixed(0)+'K';return String(n)}
+function fmdur(min){if(!min||min<0)return'--';const m=Math.round(min);if(m<60)return m+'分钟';if(m<1440)return Math.floor(m/60)+'时'+(m%60)+'分';return Math.floor(m/1440)+'天'+Math.floor(m%1440/60)+'时'}
 
-  ctx.fillStyle='#0a0a14';ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle='rgba(255,255,255,.03)';ctx.lineWidth=1;
-  for(let i=0;i<6;i++){const y=H/5*i;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
-  for(let i=0;i<8;i++){const x=W/7*i;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
-
-  if(!hist||hist.length<2){
-    ctx.fillStyle='#606080';ctx.font='12px sans-serif';ctx.textAlign='center';
-    ctx.fillText('数据收集中...',W/2,H/2);return;
-  }
-  const maxP=Math.max(5,...hist.map(d=>d.processes||0));
-  const pts=hist.map((d,i)=>({x:i/Math.max(1,hist.length-1)*W, y:H-((d.processes||0)/maxP)*H*.55-8, n:d.processes||0, m:d.memMB||0}));
-
-  // Area
-  ctx.beginPath();ctx.moveTo(pts[0].x,H);
-  pts.forEach(p=>ctx.lineTo(p.x,p.y));
-  ctx.lineTo(pts[pts.length-1].x,H);ctx.closePath();
-  const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'rgba(124,92,252,.22)');g.addColorStop(1,'rgba(124,92,252,.02)');
-  ctx.fillStyle=g;ctx.fill();
-
-  // Line
-  ctx.beginPath();ctx.strokeStyle='#7c5cfc';ctx.lineWidth=2;
-  ctx.shadowColor='rgba(124,92,252,.4)';ctx.shadowBlur=6;
-  pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
-  ctx.stroke();ctx.shadowBlur=0;
-
-  // Mem dashed line
-  const maxM=Math.max(100,...hist.map(d=>d.memMB||0));
-  ctx.beginPath();ctx.strokeStyle='rgba(0,229,255,.25)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
-  hist.forEach((d,i)=>{const x=i/Math.max(1,hist.length-1)*W,y=H-((d.memMB||0)/maxM)*H*.55-8;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
-  ctx.stroke();ctx.setLineDash([]);
-
-  // Labels
-  ctx.fillStyle='#9090b0';ctx.font='10px monospace';ctx.textAlign='left';
-  ctx.fillText(`进程: ${pts[pts.length-1]?.n||0}  (最大: ${maxP})`,8,14);
-  const lastMem=hist[hist.length-1]?.memMB?.toFixed(0)||'?';
-  ctx.fillStyle='#00e5ff';ctx.fillText(`内存: ${lastMem} MB`,8,28);
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  Helpers
-// ═══════════════════════════════════════════════════════════════
-function fmtTok(n){if(!n)return'0';if(n>1e9)return(n/1e9).toFixed(1)+'B';if(n>1e6)return(n/1e6).toFixed(1)+'M';if(n>1e3)return(n/1e3).toFixed(0)+'K';return String(n)}
-function fmtDur(min){
-  if(!min||min<0)return'--';const m=Math.round(min);
-  if(m<60)return m+'分钟';if(m<1440)return Math.floor(m/60)+'时'+(m%60)+'分';
-  return Math.floor(m/1440)+'天'+Math.floor(m%1440/60)+'时';
-}
-setInterval(()=>document.getElementById('clock').textContent=new Date().toLocaleTimeString('zh-CN'),1000);
-window.addEventListener('resize',drawChart);
-setInterval(drawChart,3000);
-</script>
-</body>
-</html>
+setInterval(()=>document.getElementById('clk').textContent=new Date().toLocaleTimeString('zh-CN'),1000);
+</script></body></html>

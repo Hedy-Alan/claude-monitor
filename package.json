@@ -1,0 +1,15 @@
+{
+  "name": "claude-code-monitor",
+  "version": "1.0.0",
+  "description": "Real-time desktop monitor for Claude Code - process status, token usage, health checks",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["claude", "monitor", "dashboard", "token-tracking"],
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

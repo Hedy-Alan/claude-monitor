@@ -81,58 +81,72 @@ function render(d){
   const dot=document.getElementById('d');
   if(d.procs.length>0)dot.className='dot ok';else dot.className='dot idle';
 
-  const t=d.tokens||{};
-  const sess=d.sess||[];
-  const alive=sess.filter(s=>s.active).length;
+  var t=d.tokens||{};
+  var sess=d.sess||[];
+  var alive=sess.filter(function(s){return s.active}).length;
 
-  document.getElementById('mn').innerHTML=`
-    <div class=stats>
-      <div class=st><div class=sv>${d.procs.length}</div><div class=sl>Claude 进程</div><div class=ss>总CPU ${d.procs.reduce((s,p)=>s+(p.CPU||0),0).toFixed(0)}s</div></div>
-      <div class=st><div class=sv>${sess.length}</div><div class=sl>会话</div><div class=ss>${alive} 活跃 · ${sess.length-alive} 已结束</div></div>
-      <div class=st><div class=sv>${fmt(t.input)}</div><div class=sl>输入 Token</div></div>
-      <div class=st><div class=sv>${fmt(t.output)}</div><div class=sl>输出 Token</div></div>
-    </div>
+  var html='';
 
-    <div class=sec><h3>📋 会话详情</h3>
-    ${sess.length===0?'<div style="color:var(--t3);font-size:10px;padding:20px;text-align:center">暂无会话</div>':
-      sess.map(s=>{
-        const tk=s.tokens||{};
-        const dur=fmdur(s.age);
-        const input=fmt(tk.input||0),output=fmt(tk.output||0);
-        const cacheHits=tk.cacheR?fmt(tk.cacheR)+' (命中)' : '0';
-        const models=tk.models?Object.entries(tk.models).sort((a,b)=>b[1].input-a[1].input):[];
-        return `<div class=ses>
-          <div class=sh>
-            <div style=display:flex;align-items:center;gap:10px>
-              <span class="live ${s.active?'alive':'dead'}"></span>
-              <span class=sid>${s.sid}</span>
-              <span class=smeta>PID ${s.pid||'?'} · ${s.kind} · ${s.entry} · v${s.ver}</span>
-            </div>
-            <span class=smeta>${dur}</span>
-          </div>
-          <div class=tgrid>
-            <div class=tg><div class=tv>${dur}</div><div class=tl>运行时长</div></div>
-            <div class=tg><div class=tv>${input}</div><div class=tl>输入 Token</div></div>
-            <div class=tg><div class=tv>${output}</div><div class=tl>输出 Token</div></div>
-            <div class=tg><div class=tv style=color:var(--or)>${cacheHits}</div><div class=tl>缓存命中</div></div>
-          </div>
-          ${models.length?`<div class=models>🧠 ${models.map(([m,v])=>\`<span>\${m}</span> \${fmt(v.input)}in/\${fmt(v.output)}out\`).join(' · ')}</div>`:''}
-        </div>`;
-      }).join('')
-    }
-    </div>
+  // Stats
+  html+='<div class=stats>';
+  html+='<div class=st><div class=sv>'+d.procs.length+'</div><div class=sl>Claude 进程</div><div class=ss>总CPU '+d.procs.reduce(function(s,p){return s+(p.CPU||0)},0).toFixed(0)+'s</div></div>';
+  html+='<div class=st><div class=sv>'+sess.length+'</div><div class=sl>会话</div><div class=ss>'+alive+' 活跃 · '+(sess.length-alive)+' 已结束</div></div>';
+  html+='<div class=st><div class=sv>'+fmt(t.input)+'</div><div class=sl>输入 Token</div></div>';
+  html+='<div class=st><div class=sv>'+fmt(t.output)+'</div><div class=sl>输出 Token</div></div>';
+  html+='</div>';
 
-    <div class=sec><h3>🖥️ 进程详情</h3>
-    ${d.procs.length===0?'<div style="color:var(--t3);font-size:10px;padding:10px;text-align:center">暂无进程</div>':
-      `<div style=display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:4px>${
-        d.procs.map(p=>`<div style="background:var(--card);border:1px solid var(--bdr);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:10px"><b style=color:var(--ac)>PID ${p.Id}</b><br>CPU ${(p.CPU||0).toFixed(0)}s<br>内存 ${p.Mem||0} MB<br>${p.UpM||0}分钟 · ${p.Threads||0}线程</div>`).join('')
-      }</div>`
-    }
-    </div>
-  `;
+  // Sessions
+  html+='<div class=sec><h3>会话详情</h3>';
+  if(sess.length===0){
+    html+='<div style="color:var(--t3);font-size:10px;padding:20px;text-align:center">暂无会话</div>';
+  }else{
+    sess.forEach(function(s){
+      var tk=s.tokens||{};
+      var dur=fmdur(s.age);
+      var input=fmt(tk.input||0),output=fmt(tk.output||0);
+      var cacheHits=tk.cacheR?fmt(tk.cacheR)+' (命中)' : '0';
+      var models=tk.models?Object.entries(tk.models).sort(function(a,b){return b[1].input-a[1].input}):[];
+      html+='<div class=ses>';
+      html+='<div class=sh>';
+      html+='<div style="display:flex;align-items:center;gap:10px">';
+      html+='<span class="live '+(s.active?'alive':'dead')+'"></span>';
+      html+='<span class=sid>'+s.sid+'</span>';
+      html+='<span class=smeta>PID '+(s.pid||'?')+' · '+(s.kind||'')+' · '+(s.entry||'')+' · v'+(s.ver||'')+'</span>';
+      html+='</div>';
+      html+='<span class=smeta>'+dur+'</span>';
+      html+='</div>';
+      html+='<div class=tgrid>';
+      html+='<div class=tg><div class=tv>'+dur+'</div><div class=tl>运行时长</div></div>';
+      html+='<div class=tg><div class=tv>'+input+'</div><div class=tl>输入 Token</div></div>';
+      html+='<div class=tg><div class=tv>'+output+'</div><div class=tl>输出 Token</div></div>';
+      html+='<div class=tg><div class=tv style=color:var(--or)>'+cacheHits+'</div><div class=tl>缓存命中</div></div>';
+      html+='</div>';
+      if(models.length){
+        html+='<div class=models>🧠 ';
+        html+=models.map(function(mv){return '<span>'+mv[0]+'</span> '+fmt(mv[1].input)+'in/'+fmt(mv[1].output)+'out'}).join(' · ');
+        html+='</div>';
+      }
+      html+='</div>';
+    });
+  }
+  html+='</div>';
 
+  // Process list
+  html+='<div class=sec><h3>进程详情</h3>';
+  if(d.procs.length===0){
+    html+='<div style="color:var(--t3);font-size:10px;padding:10px;text-align:center">暂无进程</div>';
+  }else{
+    html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:4px">';
+    d.procs.forEach(function(p){
+      html+='<div style="background:var(--card);border:1px solid var(--bdr);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:10px"><b style=color:var(--ac)>PID '+p.Id+'</b><br>CPU '+(p.CPU||0).toFixed(0)+'s<br>内存 '+(p.Mem||0)+' MB<br>'+(p.UpM||0)+'分钟 · '+(p.Threads||0)+'线程</div>';
+    });
+    html+='</div>';
+  }
+  html+='</div>';
+
+  document.getElementById('mn').innerHTML=html;
   document.getElementById('fu').textContent='更新 '+new Date().toLocaleTimeString('zh-CN');
-  document.getElementById('fs').textContent=`🧠 内存 ${d.sys?.memUsed||'?'}% / ${d.sys?.memTotal||'?'}GB`;
+  document.getElementById('fs').textContent='内存 '+(d.sys?.memUsed||'?')+'% / '+(d.sys?.memTotal||'?')+'GB';
 }
 
 function fmt(n){if(!n)return'0';if(n>1e9)return(n/1e9).toFixed(1)+'B';if(n>1e6)return(n/1e6).toFixed(1)+'M';if(n>1e3)return(n/1e3).toFixed(0)+'K';return String(n)}

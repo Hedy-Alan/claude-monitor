@@ -9,14 +9,12 @@
 </p>
 
 <p align="center">
-  <img src="screenshot.png" alt="Claude Code Monitor Screenshot" width="90%">
+  <img src="screenshot.png" alt="Claude Code Monitor" width="90%">
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen?logo=node.js" alt="Node.js">
   <img src="https://img.shields.io/badge/windows-✅-blue?logo=windows" alt="Windows">
-  <img src="https://img.shields.io/badge/macos-✅-black?logo=apple" alt="macOS">
-  <img src="https://img.shields.io/badge/linux-✅-orange?logo=linux" alt="Linux">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
 </p>
 
@@ -39,14 +37,12 @@
 
 | 模块 | 能力 |
 |------|------|
-| 🖥️ **进程监控** | 实时列出所有 `claude` 进程：PID / CPU 时间 / 内存 MB / 线程数 / 运行时长 / 启动时间 |
-| 📋 **会话追踪** | 读取 `~/.claude/sessions/` 目录，展示会话 ID / 类型 / 入口 / 版本 / 活跃状态 |
-| 🔢 **Token 统计** | 从 JSONL 转录文件解析真实 API 用量，按模型拆分 (Opus / Sonnet / Haiku 等) |
-| 🏥 **健康告警** | 自动检测：进程数过多 · 内存过高 · 残留会话堆积 · 会话运行超 8 小时 |
-| 📡 **实时活动** | 文件系统 watcher 监控 `~/.claude/` 目录，检测 Claude 是否有文件活动 |
-| 📊 **趋势图表** | Canvas 绘制近 1 小时进程数 + 内存趋势曲线 |
+| 🖥️ **进程监控** | 实时列出所有 `claude` 进程：PID / CPU 时间 / 内存 MB / 线程数 / 运行时长 |
+| 📋 **会话追踪** | 只显示活跃会话，每行显示运行时长/输入/输出/缓存命中。点击展开看 Token 流向细节 |
+| 🔢 **Token 统计** | 从 JSONL 转录文件实时解析，按模型拆分 (Opus/Sonnet/Haiku/DeepSeek 等)，显示 per-model in/out/缓存 |
+| 💻 **系统监控** | CPU 型号、内存使用率 + 进度条、C 盘容量 + 使用率 + 进度条、GPU 型号 + 显存 |
 | 🔗 **WebSocket** | 每 2 秒推送全量状态，断线自动重连，HTTP fallback |
-| 🎨 **暗色 UI** | 赛博朋克风格，卡片式布局，点击展开/折叠，响应式适配 |
+| 🎨 **暗色 UI** | 赛博朋克风格，紧凑居中布局，点击展开/折叠，展开状态持久化 |
 
 ---
 

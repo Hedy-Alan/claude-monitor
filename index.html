@@ -58,7 +58,14 @@ main{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;
 .mc-stats span{white-space:nowrap}
 .ses .sd .cwd{font-size:9px;color:var(--t3);margin-top:6px;padding-top:6px;border-top:1px solid var(--bdr)}
 
-/* Footer */
+/* Sys panel cards */
+.sys-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:4px}
+.sys-card{background:var(--card);border:1px solid var(--bdr);border-radius:6px;padding:8px 6px;text-align:center}
+.sys-card .sv{font-family:var(--mono);font-size:16px;font-weight:700}
+.sys-card .sl{font-size:8px;color:var(--t3);margin-top:2px;letter-spacing:.5px}
+.sys-card .bar-wrap{height:4px;background:rgba(255,255,255,.05);border-radius:2px;margin-top:4px;overflow:hidden}
+.sys-card .bar-fill{height:100%;border-radius:2px;transition:width .5s}
+.bar-fill.low{background:var(--gr)}.bar-fill.mid{background:var(--or)}.bar-fill.hi{background:var(--rd)}
 #ft{display:flex;align-items:center;justify-content:space-between;height:20px;padding:0 12px;font-size:8px;color:var(--t3);background:var(--bg2);border-top:1px solid var(--bdr);flex-shrink:0}
 </style></head><body>
 
@@ -117,6 +124,19 @@ function render(d){
   html+='<div class=stk><div class=sv>'+fmt(t.input)+'</div><div class=sl>输入 Token</div></div>';
   html+='<div class=stk><div class=sv>'+fmt(t.output)+'</div><div class=sl>输出 Token</div></div>';
   html+='<div class=stk><div class=sv>'+fmt(t.cacheR)+'</div><div class=sl>缓存命中</div></div>';
+  html+='</div>';
+
+  // System monitor cards
+  var sys=d.sys||{};
+  var cpuBar='low',memBar='low',diskBar='low';
+  if(sys.memUsed>70)memBar='mid';if(sys.memUsed>85)memBar='hi';
+  if(sys.disk&&sys.disk.pct>70)diskBar='mid';if(sys.disk&&sys.disk.pct>85)diskBar='hi';
+  html+='<div class=sys-row>';
+  html+='<div class=sys-card><div class=sv>'+(sys.memUsed||0)+'%</div><div class=sl>内存使用</div><div class=bar-wrap><div class="bar-fill '+memBar+'" style=width:'+(sys.memUsed||0)+'%></div></div></div>';
+  html+='<div class=sys-card><div class=sv>'+(sys.memTotal||0)+'GB</div><div class=sl>总内存</div></div>';
+  html+='<div class=sys-card><div class=sv>'+(sys.disk?sys.disk.pct+'%':'--')+'</div><div class=sl>C盘使用</div><div class=bar-wrap><div class="bar-fill '+diskBar+'" style=width:'+(sys.disk?sys.disk.pct:0)+'%></div></div></div>';
+  html+='<div class=sys-card><div class=sv>'+(sys.disk?sys.disk.total+'GB':'--')+'</div><div class=sl>C盘容量</div></div>';
+  html+='<div class=sys-card><div class=sv style=font-size:10px>'+(sys.gpu&&sys.gpu.name?sys.gpu.name:'未知GPU')+'</div><div class=sl>显卡</div></div>';
   html+='</div>';
 
   // Process bar
@@ -179,7 +199,7 @@ function render(d){
   });
 
   document.getElementById('fu').textContent='更新 '+new Date().toLocaleTimeString('zh-CN');
-  document.getElementById('fs').textContent='🧠 '+(d.sys?.memUsed||'?')+'% / '+(d.sys?.memTotal||'?')+'GB · 缓存写 '+fmt(t.cacheW);
+  document.getElementById('fs').textContent='CPU: '+((d.sys?.cpuModel)||'?').substring(0,30)+' | 磁盘: '+(d.sys?.disk?.pct||'?')+'% | 缓存写 '+fmt(t.cacheW);
 }
 
 function fmt(n){if(!n)return'0';if(n>1e9)return(n/1e9).toFixed(1)+'B';if(n>1e6)return(n/1e6).toFixed(1)+'M';if(n>1e3)return(n/1e3).toFixed(0)+'K';return String(n)}

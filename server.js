@@ -129,9 +129,38 @@ function collect(){
     if(key){s.tokens=tokenState[key]}
   });
 
-  // System
+  // System: CPU, memory, disk
   const tmem=os.totalmem(),fmem=os.freemem();
-  const sys={memUsed:+((1-fmem/tmem)*100).toFixed(1),memTotal:+(tmem/1e9).toFixed(1),memFree:+(fmem/1e9).toFixed(1),platform:process.platform};
+  const cpus=os.cpus();
+  const cpuSpeed=cpus.reduce((s,c)=>s+c.speed,0)/cpus.length;
+  const cpuModel=cpus[0]?.model||'';
+  // Disk info via PowerShell wrapper script
+  let disk={used:0,total:0,pct:0};
+  try{
+    const ds=path.join(__dirname,'.disk.ps1');
+    fs.writeFileSync(ds,`
+$d = Get-PSDrive C
+$used = [math]::Round(($d.Used/1GB),1)
+$total = [math]::Round((($d.Used+$d.Free)/1GB),1)
+$pct = [math]::Round($d.Used/($d.Used+$d.Free)*100,1)
+@{used=$used;total=$total;pct=$pct} | ConvertTo-Json -Compress
+`.trim(),'utf8');
+    const o=execSync('powershell -NoProfile -ExecutionPolicy Bypass -File "'+ds+'"',{encoding:'utf8',timeout:5000,windowsHide:true}).trim();
+    try{disk=JSON.parse(o)}catch{};try{fs.unlinkSync(ds)}catch{}
+  }catch(e){try{fs.unlinkSync(path.join(__dirname,'.disk.ps1'))}catch{}}
+  // GPU info via PowerShell wrapper script
+  let gpu={name:'',vram:0};
+  try{
+    const gs=path.join(__dirname,'.gpu.ps1');
+    fs.writeFileSync(gs,`
+$g = Get-CimInstance Win32_VideoController | Where-Object { $_.Name -notmatch "Remote" } | Select-Object -First 1
+@{name=$g.Name;vram=[math]::Round($g.AdapterRAM/1GB,1)} | ConvertTo-Json -Compress
+`.trim(),'utf8');
+    const o=execSync('powershell -NoProfile -ExecutionPolicy Bypass -File "'+gs+'"',{encoding:'utf8',timeout:5000,windowsHide:true}).trim();
+    try{gpu=JSON.parse(o)}catch{};try{fs.unlinkSync(gs)}catch{}
+  }catch(e){try{fs.unlinkSync(path.join(__dirname,'.gpu.ps1'))}catch{}}
+  const sys={memUsed:+((1-fmem/tmem)*100).toFixed(1),memTotal:+(tmem/1e9).toFixed(1),memFree:+(fmem/1e9).toFixed(1),
+    cpuModel:cpuModel.replace(/\s+/g,' ').substring(0,50),cpuSpeed,disk,gpu,platform:process.platform};
 
   // Global totals
   const totals={input:0,output:0,cacheW:0,cacheR:0};

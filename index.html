@@ -13,63 +13,75 @@ body{display:flex;flex-direction:column}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
 
 /* Bar */
-#bar{display:flex;align-items:center;justify-content:space-between;height:38px;padding:0 14px;background:var(--bg2);border-bottom:1px solid var(--bdr);flex-shrink:0}
-#bar .left{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--ac)}
-.dot{width:7px;height:7px;border-radius:50%}.dot.ok{background:var(--gr)}.dot.idle{background:var(--t3)}
-#bar .right{font-size:10px;color:var(--t3)}
+#bar{display:flex;align-items:center;justify-content:space-between;height:36px;padding:0 12px;background:var(--bg2);border-bottom:1px solid var(--bdr);flex-shrink:0}
+#bar .left{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--ac)}
+#bar .right{font-size:9px;color:var(--t3);display:flex;align-items:center;gap:10px}
+#bar .right .stat-mini{font-size:9px;color:var(--t2)}
+#bar .right .stat-mini b{color:var(--t1)}
 
 /* Main */
-main{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:8px}
+main{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:6px;max-width:700px;margin:0 auto;width:100%}
 
-/* Stat row */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.st{background:var(--card);border:1px solid var(--bdr);border-radius:6px;padding:12px;text-align:center}
-.st .sv{font-family:var(--mono);font-size:26px;font-weight:700}.st .sl{font-size:10px;color:var(--t2);margin-top:4px;letter-spacing:.5px}
+/* Stat cards — horizontal row */
+.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.stk{background:var(--card);border:1px solid var(--bdr);border-radius:6px;padding:10px 8px;text-align:center}
+.stk .sv{font-family:var(--mono);font-size:22px;font-weight:700}
+.stk .sl{font-size:9px;color:var(--t2);margin-top:3px;letter-spacing:.5px}
 
-/* Process mini */
-.proc-row{display:flex;flex-wrap:wrap;gap:4px}
-.proc-chip{background:var(--card);border:1px solid var(--bdr);border-radius:4px;padding:4px 8px;font-family:var(--mono);font-size:10px;color:var(--t2)}
-.proc-chip b{color:var(--ac)}
+/* Process chips — inline bar */
+.proc-bar{display:flex;flex-wrap:wrap;gap:4px;padding:4px 6px;background:var(--card);border:1px solid var(--bdr);border-radius:6px}
+.proc-chip{font-family:var(--mono);font-size:9px;color:var(--t2);padding:2px 6px;border-right:1px solid var(--bdr);white-space:nowrap}
+.proc-chip:last-child{border-right:none}
+.proc-chip .pi{color:var(--ac);font-weight:600}
 
-/* Session card - compact */
-.ses{background:var(--card);border:1px solid var(--bdr);border-radius:6px;margin-bottom:4px;transition:border-color .2s;overflow:hidden}
+/* Session card */
+.ses{background:var(--card);border:1px solid var(--bdr);border-radius:6px;overflow:hidden;transition:border-color .2s}
 .ses:hover{border-color:var(--ac)}
-.ses .header{cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:8px 10px;font-size:11px}
-.ses .header .live{width:7px;height:7px;border-radius:50%;background:var(--gr);box-shadow:0 0 5px var(--gr);flex-shrink:0;margin-right:8px}
-.ses .header .sid{font-family:var(--mono);color:var(--ac);font-weight:600;margin-right:10px}
-.ses .header .meta{font-size:10px;color:var(--t3);flex:1}
-.ses .header .summary{display:flex;gap:10px;font-family:var(--mono);font-size:10px;margin-right:10px}
-.ses .header .summary .tok-item{text-align:right}.tok-item .tl{font-size:8px;color:var(--t3)}.tok-item .tv{color:var(--t1)}
-.ses .header .chev{color:var(--t3);font-size:10px;transition:transform .25s}
-.ses.open .header .chev{transform:rotate(180deg)}
+.ses .sh{cursor:pointer;display:flex;align-items:center;padding:8px 10px;font-size:10px;gap:8px;user-select:none}
+.ses .sh .dot-alive{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--gr);box-shadow:0 0 4px var(--gr)}
+.ses .sh .sid{font-family:var(--mono);color:var(--ac);font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis}
+.ses .sh .meta{font-size:9px;color:var(--t3);flex:1;overflow:hidden;text-overflow:ellipsis}
+.ses .sh .tok-inline{display:flex;gap:6px;font-size:9px;color:var(--t2);text-align:center;flex-shrink:0}
+.ses .sh .tok-inline b{display:block;font-family:var(--mono);font-size:11px;color:var(--t1)}
+.ses .sh .chev{color:var(--t3);font-size:9px;transition:transform .2s;flex-shrink:0}
+.ses.open .sh .chev{transform:rotate(180deg)}
 
-/* Session detail */
-.ses .detail{display:none;padding:0 10px 10px;border-top:1px solid var(--bdr)}
-.ses.open .detail{display:block}
-.ses .detail .dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 0}
-.ses .detail .dgrid .dg{text-align:center}.dg .dv{font-family:var(--mono);font-size:15px;font-weight:700}.dg .dl{font-size:8px;color:var(--t3);letter-spacing:.5px}
-.ses .detail .models{padding:6px 0;font-size:10px;color:var(--t2);display:flex;flex-wrap:wrap;gap:8px}
-.ses .detail .models .mchip{background:rgba(124,92,252,.1);border:1px solid var(--bdr);border-radius:4px;padding:3px 8px;font-size:9px}
-.mchip .mn{color:var(--ac);font-weight:600}
-.ses .detail .cwd{font-size:9px;color:var(--t3);padding-top:4px}
+/* Detail */
+.ses .sd{display:none;border-top:1px solid var(--bdr);padding:8px 12px 10px}
+.ses.open .sd{display:block}
+.ses .sd .dg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+.ses .sd .dg .di{text-align:center}.di .dv{font-family:var(--mono);font-size:14px;font-weight:700}.di .dl{font-size:8px;color:var(--t3)}
+.ses .sd .mflow{display:flex;flex-wrap:wrap;gap:6px}
+.ses .sd .mchip{background:rgba(124,92,252,.08);border:1px solid var(--bdr);border-radius:4px;padding:4px 8px;font-size:9px}
+.mchip .mc-name{color:var(--ac);font-weight:600;margin-bottom:2px}
+.mchip .mc-stats{font-family:var(--mono);color:var(--t2);display:flex;gap:8px}
+.mc-stats span{white-space:nowrap}
+.ses .sd .cwd{font-size:9px;color:var(--t3);margin-top:6px;padding-top:6px;border-top:1px solid var(--bdr)}
 
 /* Footer */
-#ft{display:flex;align-items:center;justify-content:space-between;height:22px;padding:0 14px;font-size:9px;color:var(--t3);background:var(--bg2);border-top:1px solid var(--bdr);flex-shrink:0}
+#ft{display:flex;align-items:center;justify-content:space-between;height:20px;padding:0 12px;font-size:8px;color:var(--t3);background:var(--bg2);border-top:1px solid var(--bdr);flex-shrink:0}
 </style></head><body>
 
 <div id=bar>
-  <div class=left><span>🤖 Claude Monitor</span><span class="dot ok" id=d></span></div>
-  <div class=right><span id=clk>--</span> · 2s</div>
+  <div class=left>🤖 Claude Monitor</div>
+  <div class=right>
+    <span class=stat-mini>进程 <b id=hbProcs>0</b></span>
+    <span class=stat-mini>会话 <b id=hbSess>0</b></span>
+    <span class=stat-mini>输入 <b id=hbIn>0</b></span>
+    <span class=stat-mini>输出 <b id=hbOut>0</b></span>
+    <span style=font-size:9px;color:var(--t3) id=clk>--</span>
+  </div>
 </div>
 <main id=mn>加载中...</main>
 <div id=ft><span id=fu>--</span><span id=fs>--</span></div>
 
 <script>
-var ws;
+var ws, expanded={};
+
 function conn(){
   ws=new WebSocket('ws://'+location.hostname+':9876');
-  ws.onopen=function(){document.getElementById('d').className='dot ok'};
-  ws.onclose=function(){document.getElementById('d').className='dot idle';setTimeout(conn,3000)};
+  ws.onopen=function(){};
+  ws.onclose=function(){setTimeout(conn,3000)};
   ws.onmessage=function(e){var m=JSON.parse(e.data);if(m.type==='full'||m.type==='update')render(m.data)};
 }
 conn();
@@ -78,79 +90,96 @@ setInterval(function(){
   fetch('/api/state').then(function(r){return r.json()}).then(render).catch(function(){});
 },2000);
 
+function toggle(id){
+  expanded[id]=!expanded[id];
+  var el=document.getElementById('ses-'+id);
+  if(el)el.classList.toggle('open',expanded[id]);
+}
+
 function render(d){
   if(!d)return;
-  var dot=document.getElementById('d');
-  dot.className=d.procs.length?'dot ok':'dot idle';
-
-  var t=d.tokens||{};
+  var t=d.tokens||{},procs=d.procs||[];
   var allSess=d.sess||[];
-  // Only show active sessions
   var sess=allSess.filter(function(s){return s.active});
+
+  // Header bar stats
+  document.getElementById('hbProcs').textContent=procs.length;
+  document.getElementById('hbSess').textContent=sess.length;
+  document.getElementById('hbIn').textContent=fmt(t.input);
+  document.getElementById('hbOut').textContent=fmt(t.output);
 
   var html='';
 
-  // Stats
-  html+='<div class=stats>';
-  html+='<div class=st><div class=sv>'+d.procs.length+'</div><div class=sl>活跃进程</div></div>';
-  html+='<div class=st><div class=sv>'+sess.length+'</div><div class=sl>活跃会话</div></div>';
-  html+='<div class=st><div class=sv>'+fmt(t.input)+'</div><div class=sl>输入 Token</div></div>';
-  html+='<div class=st><div class=sv>'+fmt(t.output)+'</div><div class=sl>输出 Token</div></div>';
+  // Stat cards
+  html+='<div class=stat-row>';
+  html+='<div class=stk><div class=sv>'+procs.length+'</div><div class=sl>活跃进程</div></div>';
+  html+='<div class=stk><div class=sv>'+sess.length+'</div><div class=sl>活跃会话</div></div>';
+  html+='<div class=stk><div class=sv>'+fmt(t.input)+'</div><div class=sl>输入 Token</div></div>';
+  html+='<div class=stk><div class=sv>'+fmt(t.output)+'</div><div class=sl>输出 Token</div></div>';
+  html+='<div class=stk><div class=sv>'+fmt(t.cacheR)+'</div><div class=sl>缓存命中</div></div>';
   html+='</div>';
 
-  // Process chips
-  if(d.procs.length){
-    html+='<div class=proc-row>';
-    d.procs.forEach(function(p){
-      html+='<div class=proc-chip><b>PID '+p.Id+'</b> CPU '+p.CPU.toFixed(0)+'s | '+p.Mem+'M | '+p.UpM+'min | '+p.Threads+'线程</div>';
+  // Process bar
+  if(procs.length){
+    html+='<div class=proc-bar>';
+    procs.forEach(function(p){
+      html+='<span class=proc-chip><span class=pi>PID '+p.Id+'</span> CPU '+(p.CPU||0).toFixed(0)+'s | '+p.Mem+' MB | '+p.UpM+'min | '+p.Threads+'线程</span>';
     });
     html+='</div>';
   }
 
   // Sessions
-  html+='<div style="font-size:10px;font-weight:600;color:var(--t2);letter-spacing:1px;margin-top:4px">会话</div>';
-  if(!sess.length){
-    html+='<div style="color:var(--t3);font-size:10px;padding:16px;text-align:center">暂无活跃会话</div>';
+  if(sess.length===0){
+    html+='<div style="color:var(--t3);font-size:10px;padding:20px;text-align:center">暂无活跃会话</div>';
   }else{
     sess.forEach(function(s,i){
-      var tk=s.tokens||{};
-      var dur=fmdur(s.age);
+      var tk=s.tokens||{},dur=fmdur(s.age);
       var models=tk.models?Object.entries(tk.models).sort(function(a,b){return b[1].input-a[1].input}):[];
       html+='<div class=ses id=ses-'+i+'>';
-      html+='<div class=header onclick="var el=document.getElementById(\'ses-'+i+'\');el.classList.toggle(\'open\')">';
-      html+='<span class=live></span>';
+      html+='<div class=sh onclick="toggle('+i+')">';
+      html+='<span class=dot-alive></span>';
       html+='<span class=sid>'+s.sid+'</span>';
       html+='<span class=meta>'+s.entry+' · v'+s.ver+'</span>';
-      html+='<span class=summary>';
-      html+='<span class=tok-item><span class=tv>'+dur+'</span><span class=tl>运行</span></span>';
-      html+='<span class=tok-item><span class=tv>'+fmt(tk.input||0)+'</span><span class=tl>输入</span></span>';
-      html+='<span class=tok-item><span class=tv>'+fmt(tk.output||0)+'</span><span class=tl>输出</span></span>';
-      html+='<span class=tok-item><span class=tv>'+fmt(tk.cacheR||0)+'</span><span class=tl>缓存命中</span></span>';
+      html+='<span class=tok-inline>';
+      html+='<span><b>'+dur+'</b>运行</span>';
+      html+='<span><b>'+fmt(tk.input||0)+'</b>输入</span>';
+      html+='<span><b>'+fmt(tk.output||0)+'</b>输出</span>';
+      html+='<span><b>'+fmt(tk.cacheR||0)+'</b>命中</span>';
       html+='</span>';
       html+='<span class=chev>▼</span>';
       html+='</div>';
-      // Detail
-      html+='<div class=detail>';
-      html+='<div class=dgrid>';
-      html+='<div class=dg><div class=dv>'+dur+'</div><div class=dl>运行时长</div></div>';
-      html+='<div class=dg><div class=dv>'+fmt(tk.input||0)+'</div><div class=dl>输入 Token</div></div>';
-      html+='<div class=dg><div class=dv>'+fmt(tk.output||0)+'</div><div class=dl>输出 Token</div></div>';
-      html+='<div class=dg><div class=dv>'+fmt(tk.cacheR||0)+'</div><div class=dl>缓存命中</div></div>';
+      html+='<div class=sd>';
+      html+='<div class=dg>';
+      html+='<div class=di><div class=dv>'+dur+'</div><div class=dl>运行时长</div></div>';
+      html+='<div class=di><div class=dv>'+fmt(tk.input||0)+'</div><div class=dl>输入 Token</div></div>';
+      html+='<div class=di><div class=dv>'+fmt(tk.output||0)+'</div><div class=dl>输出 Token</div></div>';
+      html+='<div class=di><div class=dv>'+fmt(tk.cacheR||0)+'</div><div class=dl>缓存命中</div></div>';
       html+='</div>';
       if(models.length){
-        html+='<div class=models>';
-        models.forEach(function(m){html+='<div class=mchip><span class=mn>'+m[0]+'</span> &nbsp;'+fmt(m[1].input)+' in / '+fmt(m[1].output)+' out | 缓存W '+fmt(m[1].cacheW)+' R '+fmt(m[1].cacheR)+'</div>'});
+        html+='<div class=mflow>';
+        models.forEach(function(m){
+          html+='<div class=mchip><div class=mc-name>'+m[0]+'</div><div class=mc-stats><span>in '+fmt(m[1].input)+'</span><span>out '+fmt(m[1].output)+'</span><span>W '+fmt(m[1].cacheW)+'</span><span>R '+fmt(m[1].cacheR)+'</span></div></div>';
+        });
         html+='</div>';
       }
-      html+='<div class=cwd>📂 '+s.cwd+' | PID '+s.pid+' | '+s.kind+'</div>';
+      html+='<div class=cwd>'+s.cwd+' · PID '+s.pid+' · '+s.kind+'</div>';
       html+='</div>';
       html+='</div>';
     });
   }
 
   document.getElementById('mn').innerHTML=html;
+
+  // Restore expanded state
+  Object.keys(expanded).forEach(function(id){
+    if(expanded[id]){
+      var el=document.getElementById('ses-'+id);
+      if(el)el.classList.add('open');
+    }
+  });
+
   document.getElementById('fu').textContent='更新 '+new Date().toLocaleTimeString('zh-CN');
-  document.getElementById('fs').textContent='内存 '+(d.sys?.memUsed||'?')+'% / '+(d.sys?.memTotal||'?')+'GB | 缓存写 '+fmt(t.cacheW);
+  document.getElementById('fs').textContent='🧠 '+(d.sys?.memUsed||'?')+'% / '+(d.sys?.memTotal||'?')+'GB · 缓存写 '+fmt(t.cacheW);
 }
 
 function fmt(n){if(!n)return'0';if(n>1e9)return(n/1e9).toFixed(1)+'B';if(n>1e6)return(n/1e6).toFixed(1)+'M';if(n>1e3)return(n/1e3).toFixed(0)+'K';return String(n)}

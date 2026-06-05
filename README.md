@@ -9,6 +9,10 @@
 </p>
 
 <p align="center">
+  <img src="screenshot.png" alt="Claude Code Monitor Screenshot" width="90%">
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen?logo=node.js" alt="Node.js">
   <img src="https://img.shields.io/badge/windows-✅-blue?logo=windows" alt="Windows">
   <img src="https://img.shields.io/badge/macos-✅-black?logo=apple" alt="macOS">
@@ -82,33 +86,6 @@ pm2 start server.js --name claude-monitor
 ```
 
 ---
-
-## 🖥️ 仪表盘截图
-
-打开后你会看到：
-
-```
-┌────────────────────────────────────────────────────┐
-│  🤖 Claude Monitor   ● 运行正常    ⏱ 2s  🔗 已连接 │
-├────────────────────────────────────────────────────┤
-│  ┌──────┐  ┌──────┐  ┌──────────┐                │
-│  │  10  │  │  12  │  │   51.8M  │                │
-│  │ 进程 │  │ 会话 │  │ Token用量 │                │
-│  └──────┘  └──────┘  └──────────┘                │
-│                                                    │
-│  🖥️ Claude 进程详情 [10]          ▶ 点击展开      │
-│  ┌──────────────────────────────────────────────┐  │
-│  │ PID    CPU    内存    线程   运行时长  启动    │  │
-│  │ 18520  78.5s  349MB   12    3时42分  21:42   │  │
-│  │ 16704  2.8s   324MB   10    5分      22:32   │  │
-│  │ ...                                         │  │
-│  └──────────────────────────────────────────────┘  │
-│                                                    │
-│  📋 会话列表 [12]                   ▶ 点击展开      │
-│  📊 进程活动趋势图 (Canvas)                         │
-│  🏥 健康检查 · 📡 实时活动 · 💻 系统信息            │
-└────────────────────────────────────────────────────┘
-```
 
 ---
 

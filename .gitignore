@@ -1,2 +1,5 @@
 node_modules/
 .ps-*.ps1
+.pproc.ps1
+.pdisk.ps1
+.pgpu.ps1

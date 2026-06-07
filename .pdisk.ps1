@@ -1,1 +1,0 @@
-$d=Get-PSDrive C;(Get-Volume -DriveLetter C).SizeRemaining;[PSCustomObject]@{used=[math]::Round(($d.Used/1GB),1);total=[math]::Round((($d.Used+$d.Free)/1GB),1);pct=[math]::Round($d.Used/($d.Used+$d.Free)*100,1)}|ConvertTo-Json -Compress
